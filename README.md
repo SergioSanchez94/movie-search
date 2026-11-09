@@ -33,8 +33,15 @@ Buscador web de películas con **FastAPI** y la API de **The Movie Database (TMD
 - `GET /api/movies/popular?page=1`: películas populares
 - `GET /api/movies/search?q=Interstellar&page=1`: búsqueda de películas
 - `GET /api/movies/{movie_id}`: ficha de película
+- `GET /api/catalog/search?q=Harry+Potter`: consulta metadatos públicos de resultados de MejorTorrent, sin enlaces de descarga
 - `GET /docs`: documentación OpenAPI interactiva
 
 ## Privacidad y atribución
 
 No utiliza base de datos ni almacena búsquedas. Los metadatos proceden de TMDB. Esta aplicación no está avalada ni certificada por TMDB. No descarga películas ni proporciona enlaces a torrents.
+
+## Búsqueda en MejorTorrent
+
+Al abrir una ficha de TMDB, el backend consulta `https://www47.mejortorrent.eu/busqueda?q=...` y muestra los resultados en la propia aplicación. El parser HTML es preliminar: **no ha podido validarse contra el HTML real del sitio** y puede requerir ajustar los selectores. Si el sitio bloquea solicitudes automáticas, cambia de estructura o no responde, la interfaz muestra un error o un aviso. No se recopilan enlaces de descarga.
+
+Después de actualizar el repositorio, ejecuta `pip install -r requirements.txt` para instalar Beautiful Soup y reinicia Uvicorn.
