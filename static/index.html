@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101322">
+  <title>Movie Search — Descubre películas</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/" aria-label="Movie Search inicio"><span class="brand-icon">▶</span> Movie<span>Search</span></a><span class="powered">Datos de TMDB</span></header>
+  <main>
+    <section class="hero"><div class="eyebrow">TU PRÓXIMA PELÍCULA EMPIEZA AQUÍ</div><h1>Encuentra una historia <em>que te atrape.</em></h1><p>Explora miles de películas, descubre sus valoraciones y consulta todos sus detalles.</p>
+      <form id="search-form" role="search"><label class="sr-only" for="search-input">Buscar películas</label><input id="search-input" type="search" placeholder="Busca una película, por ejemplo Interstellar…" maxlength="120" autocomplete="off" required><button type="submit">Buscar <span aria-hidden="true">→</span></button></form>
+    </section>
+    <section class="catalog" aria-live="polite"><div class="section-head"><div><span class="eyebrow">EXPLORA EL CINE</span><h2 id="results-title">Películas populares</h2></div><span id="result-count"></span></div><p id="message" class="message" role="status"></p><div id="movies" class="movie-grid"></div><div class="pagination"><button id="prev" type="button" hidden>← Anterior</button><span id="page-info"></span><button id="next" type="button" hidden>Siguiente →</button></div></section>
+  </main>
+  <dialog id="detail-dialog"><button class="close" id="close-dialog" aria-label="Cerrar ficha">✕</button><div id="detail-content"></div></dialog>
+  <footer>Información proporcionada por <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a>. Esta aplicación no está avalada ni certificada por TMDB.</footer>
+</body>
+</html>
