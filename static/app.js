@@ -81,14 +81,30 @@ async function openDetail(id) {
     right.append(el("p", "facts", facts.join("  •  ")));
     right.append(el("p", "", movie.overview || "Sin sinopsis disponible."));
     const external = el("section", "external-search");
-    external.append(el("h3", "", "Buscar también en MejorTorrent"));
-    external.append(el("p", "", "Consulta resultados públicos en una búsqueda externa. No se recopilan enlaces de descarga."));
-    const link = el("a", "external-search-link", "Buscar fichas en MejorTorrent ↗");
+    external.append(el("h3", "", "Resultados en MejorTorrent"));
+    const status = el("p", "catalog-status", "Consultando el catálogo…");
+    const list = el("div", "catalog-results");
+    external.append(status, list);
     const terms = movie.title || "";
-    link.href = "https://www47.mejortorrent.eu/busqueda?" + new URLSearchParams({q: terms}).toString();
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    external.append(link);
+    getJson("/api/catalog/search?" + new URLSearchParams({q: terms}).toString())
+      .then(data => {
+        if (!external.isConnected) return;
+        list.replaceChildren();
+        if (!data.results.length) {
+          status.textContent = "No se han encontrado resultados compatibles o el formato del catálogo ha cambiado.";
+          return;
+        }
+        status.textContent = data.count + " opciones encontradas (metadatos públicos)";
+        for (const item of data.results) {
+          const card = el("div", "catalog-result");
+          card.append(el("strong", "", item.title));
+          if (item.description) card.append(el("p", "", item.description));
+          list.append(card);
+        }
+      })
+      .catch(error => {
+        if (external.isConnected) status.textContent = "No se pudieron consultar los resultados: " + error.message;
+      });
     right.append(external);
     detail.append(left, right);
     content.replaceChildren(detail);
