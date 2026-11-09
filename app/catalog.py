@@ -3,6 +3,7 @@
 No download URLs, magnet links, or external links are returned.
 The upstream markup has not been verified; selectors may need adjustment.
 """
+import logging
 import re
 import unicodedata
 
@@ -12,6 +13,7 @@ from fastapi import HTTPException
 
 SEARCH_URL = "https://www47.mejortorrent.eu/busqueda"
 MAX_RESULTS = 40
+logger = logging.getLogger(__name__)
 
 
 def normalize(value: str) -> str:
@@ -66,7 +68,8 @@ async def search_catalog(query: str) -> dict:
                 headers={"User-Agent": "MovieSearch/1.0 (metadata search; no downloads)"},
             )
         if response.is_redirect:
-            raise HTTPException(502, "El catálogo ha redirigido la solicitud.")
+            logger.warning("Catalog redirected: HTTP %s", response.status_code)
+            raise HTTPException(502, "El catálogo ha redirigido la solicitud (HTTP " + str(response.status_code) + ").")
         response.raise_for_status()
         if "html" not in response.headers.get("content-type", "").lower():
             raise HTTPException(502, "El catálogo no ha devuelto HTML.")
@@ -75,8 +78,11 @@ async def search_catalog(query: str) -> dict:
         results = parse_results(response.text, query)
         return {"query": query, "results": results, "count": len(results)}
     except httpx.TimeoutException:
+        logger.warning("Catalog request timed out")
         raise HTTPException(504, "Tiempo de espera agotado al consultar el catálogo.") from None
     except httpx.HTTPStatusError as exc:
+        logger.warning("Catalog returned HTTP %s", exc.response.status_code)
         raise HTTPException(502, f"El catálogo no está disponible (HTTP {exc.response.status_code}).") from None
-    except httpx.RequestError:
-        raise HTTPException(502, "No se ha podido conectar con el catálogo.") from None
+    except httpx.RequestError as exc:
+        logger.warning("Catalog connection error: %s", type(exc).__name__)
+        raise HTTPException(502, "No se ha podido conectar con el catálogo (" + type(exc).__name__ + ").") from None
