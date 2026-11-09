@@ -3,3 +3,5 @@
 .external-search{border-top:1px solid #444962;margin-top:22px;padding-top:18px}.external-search h3{font-size:16px;margin:0 0 7px}.external-search p{font-size:13px;line-height:1.5;color:#aeb4cb}.external-search-link{display:inline-block;margin-top:8px;background:#785ce8;border-radius:9px;padding:11px 15px;text-decoration:none;color:white;font-weight:700;font-size:13px}.external-search-link:hover{background:#9278ff}
 
 .catalog-results{display:grid;gap:9px;margin-top:12px}.catalog-result{padding:12px;border:1px solid #434861;background:#262c42;border-radius:10px}.catalog-result strong{font-size:14px}.catalog-result p{font-size:12px;margin:7px 0 0;color:#b3b9d0;overflow-wrap:anywhere}.catalog-status{font-size:13px}
+
+.catalog-quality{display:inline-block;margin:8px 0 0 8px;color:#c7bbff;background:#37304f;border-radius:6px;padding:3px 7px;font-size:11px;font-weight:700}
