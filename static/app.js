@@ -82,19 +82,21 @@ async function openDetail(id) {
     right.append(el("p", "", movie.overview || "Sin sinopsis disponible."));
     const external = el("section", "external-search");
     external.append(el("h3", "", "Resultados en MejorTorrent"));
-    const status = el("p", "catalog-status", "Consultando el catálogo…");
+    const status = el("p", "catalog-status", "Pulsa el botón para consultar los resultados.");
     const list = el("div", "catalog-results");
-    external.append(status, list);
+    const searchButton = el("button", "external-search-link", "Consultar opciones disponibles");
+    searchButton.type = "button";
     const terms = movie.title || "";
-    getJson("/api/catalog/search?" + new URLSearchParams({q: terms}).toString())
-      .then(data => {
+    async function loadCatalog() {
+      searchButton.disabled = true;
+      status.textContent = "Consultando el catálogo…";
+      list.replaceChildren();
+      try {
+        const data = await getJson("/api/catalog/search?" + new URLSearchParams({q: terms}).toString());
         if (!external.isConnected) return;
-        list.replaceChildren();
-        if (!data.results.length) {
-          status.textContent = "No se han encontrado resultados compatibles o el formato del catálogo ha cambiado.";
-          return;
-        }
-        status.textContent = data.count + " opciones encontradas (metadatos públicos)";
+        status.textContent = data.results.length
+          ? data.count + " opciones encontradas (metadatos públicos)"
+          : "No se han identificado resultados. Es posible que la estructura HTML haya cambiado.";
         for (const item of data.results) {
           const card = el("div", "catalog-result");
           card.append(el("strong", "", item.title));
@@ -102,10 +104,14 @@ async function openDetail(id) {
           if (item.description) card.append(el("p", "", item.description));
           list.append(card);
         }
-      })
-      .catch(error => {
-        if (external.isConnected) status.textContent = "No se pudieron consultar los resultados: " + error.message;
-      });
+      } catch (error) {
+        if (external.isConnected) status.textContent = "Error al consultar el catálogo: " + error.message;
+      } finally {
+        searchButton.disabled = false;
+      }
+    }
+    searchButton.addEventListener("click", loadCatalog);
+    external.append(searchButton, status, list);
     right.append(external);
     detail.append(left, right);
     content.replaceChildren(detail);
