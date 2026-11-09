@@ -84,8 +84,8 @@ async function openDetail(id) {
     external.append(el("h3", "", "Buscar también en MejorTorrent"));
     external.append(el("p", "", "Consulta resultados públicos en una búsqueda externa. No se recopilan enlaces de descarga."));
     const link = el("a", "external-search-link", "Buscar fichas en MejorTorrent ↗");
-    const terms = [movie.title, year(movie.release_date) !== "—" ? year(movie.release_date) : ""].filter(Boolean).join(" ");
-    link.href = "https://www47.mejortorrent.eu/busqueda?q=" + new URLSearchParams({q: terms}).toString().slice(2);
+    const terms = movie.title || "";
+    link.href = "https://www47.mejortorrent.eu/busqueda?" + new URLSearchParams({q: terms}).toString();
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     external.append(link);
