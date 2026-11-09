@@ -4,6 +4,7 @@ from pathlib import Path
 
 import httpx
 from dotenv import load_dotenv
+from .catalog import search_catalog
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -61,3 +62,8 @@ async def movie_detail(movie_id: int):
     if movie_id <= 0:
         raise HTTPException(status_code=422, detail="Identificador no válido")
     return await tmdb_get(f"/movie/{movie_id}")
+
+
+@app.get("/api/catalog/search")
+async def catalog_search(q: str = Query(min_length=2, max_length=120)):
+    return await search_catalog(q.strip())
