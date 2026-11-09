@@ -20,31 +20,38 @@ def normalize(value: str) -> str:
 
 
 def parse_results(html: str, query: str) -> list[dict[str, str]]:
+    """Read result titles from anchors, including table-style search layouts."""
     soup = BeautifulSoup(html, "html.parser")
     for element in soup(["script", "style", "nav", "header", "footer", "form"]):
         element.decompose()
     terms = [term for term in re.findall(r"\w+", normalize(query)) if len(term) > 1]
     if not terms:
         return []
+
     matches = []
     seen = set()
-    # Only inspect result-like containers, not every navigation link on the page.
-    selectors = "article, .resultado, .result, .search-result, .card, .item, tbody tr, .list-group-item"
-    for node in soup.select(selectors):
-        title_node = node.select_one("h2, h3, h4, .title, .titulo, a[title]")
-        if title_node is None:
+    # The catalog may present search entries as plain anchors inside a table,
+    # rather than article/card elements. Never return the href or downloads.
+    for anchor in soup.select("a"):
+        title = re.sub(r"\s+", " ", anchor.get_text(" ", strip=True)).strip()[:200]
+        if not title or len(title) < 3:
             continue
-        title = (title_node.get("title") or title_node.get_text(" ", strip=True)).strip()
-        title = re.sub(r"\s+", " ", title)[:200]
-        if len(title) < 3 or not all(term in normalize(title) for term in terms):
+        normalized = normalize(title)
+        if not all(term in normalized for term in terms):
             continue
-        key = normalize(title)
-        if key in seen:
+        if normalized in seen:
             continue
-        seen.add(key)
-        summary = re.sub(r"\s+", " ", node.get_text(" ", strip=True))
-        summary = summary[:320]
-        matches.append({"title": title, "description": summary if summary != title else ""})
+        seen.add(normalized)
+        quality_match = re.search(
+            r"4K|2160p|1080p|720p|BDRemux|BluRay|FullBluRay|MicroHD|DVDRip|WEB[- .]?DL",
+            title,
+            flags=re.IGNORECASE,
+        )
+        matches.append({
+            "title": title,
+            "quality": quality_match.group(0) if quality_match else "",
+            "description": "",
+        })
         if len(matches) >= MAX_RESULTS:
             break
     return matches
