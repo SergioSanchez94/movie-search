@@ -14,6 +14,14 @@ from fastapi import HTTPException
 SEARCH_URL = "https://www47.mejortorrent.eu/busqueda"
 MAX_RESULTS = 40
 logger = logging.getLogger(__name__)
+# Only non-sensitive response headers are recorded.
+DIAGNOSTIC_HEADERS = ("content-type", "server", "via", "retry-after", "x-cache", "cf-ray")
+REQUEST_HEADERS = {
+    "User-Agent": "MovieSearch/1.0 (public metadata)",
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "es-ES,es;q=0.9",
+}
+
 
 
 def normalize(value: str) -> str:
@@ -65,7 +73,18 @@ async def search_catalog(query: str) -> dict:
             response = await client.get(
                 SEARCH_URL,
                 params={"q": query},
-                headers={"User-Agent": "MovieSearch/1.0 (metadata search; no downloads)"},
+                headers=REQUEST_HEADERS,
+            )
+        logger.warning(
+            "Catalog upstream status=%s response_headers=%s",
+            response.status_code,
+            {key: response.headers[key] for key in DIAGNOSTIC_HEADERS if key in response.headers},
+        )
+        if response.status_code == 403:
+            raise HTTPException(
+                502,
+                "MejorTorrent deniega el acceso desde el servidor (HTTP 403). "
+                "No es un error de TMDB. Revisa los registros para más información.",
             )
         if response.is_redirect:
             logger.warning("Catalog redirected: HTTP %s", response.status_code)
