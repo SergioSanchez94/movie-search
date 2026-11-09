@@ -98,6 +98,7 @@ async function openDetail(id) {
         for (const item of data.results) {
           const card = el("div", "catalog-result");
           card.append(el("strong", "", item.title));
+          if (item.quality) card.append(el("span", "catalog-quality", item.quality));
           if (item.description) card.append(el("p", "", item.description));
           list.append(card);
         }
